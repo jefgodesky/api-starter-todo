@@ -6,6 +6,7 @@ roles:
     - user:read
   active:
     - task:create
+    - task:own:read
     - user:self:update
     - user:self:destroy
     - role:self:listed:grant

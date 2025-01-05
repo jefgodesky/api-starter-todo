@@ -6,6 +6,18 @@
 
 With this, a user has permission to create new tasks.
 
+### `task:read`
+
+With this, a user has permission to read any task.
+
+### `task:own:read`
+
+With this, a user has permission to view her own tasks.
+Note that a user who has `task:read` can also view her
+own tasks, even if she does not have `token:own:read`.
+This is only meaningful for users who do not have
+`task:read`.
+
 ## Users
 
 ### `user:read`
