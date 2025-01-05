@@ -82,6 +82,22 @@ describe('requirePermissions', () => {
     expect(next.calls).toHaveLength(1)
   })
 
+  it('proceeds if user owns task on relevant task:own permission', async () => {
+    const id = crypto.randomUUID()
+    const ctx = createMockContext({
+      state: {
+        permissions: ['task:own:read'],
+        client: { id, name: 'John Doe' },
+        task: { uid: id, name: 'Pass all tests' }
+      }
+    })
+
+    const next = createNextSpy()
+    const middleware = requirePermissions('task:read')
+    await middleware(ctx, next)
+    expect(next.calls).toHaveLength(1)
+  })
+
   it('grants all permissions to someone with *', async () => {
     const ctx = createMockContext({
       state: {
