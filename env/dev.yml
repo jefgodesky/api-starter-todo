@@ -1,4 +1,4 @@
-name: api_starter_dev
+name: api_starter_todo_dev
 
 volumes:
   db: {}

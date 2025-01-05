@@ -1,4 +1,4 @@
-name: api_starter_test
+name: api_starter_todo_test
 
 volumes:
   db: {}

@@ -1,8 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Starter API
+  title: To Do API
   description: |-
-    This is a starting point for a new API. Add a nice description here. Markdown supported!
+    A RESTful API for creating, reading,
+    updating, and deleting to-do tasks, but
+    really this repository is an example of
+    how to use the API Starter.
   termsOfService: https://example.com/terms
   contact:
     email: you@example.com
