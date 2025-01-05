@@ -3,6 +3,7 @@ import { expect } from '@std/expect'
 import { Status } from '@oak/oak'
 import { createMockContext } from '@oak/oak/testing'
 import type Response from '../../types/response.ts'
+import type Task from '../../types/task.ts'
 import type TaskCreation from '../../types/task-creation.ts'
 import type TaskResource from '../../types/task-resource.ts'
 import DB from '../../DB.ts'
@@ -35,6 +36,37 @@ describe('TaskController', () => {
 
       expect(ctx.response.status).toBe(Status.OK)
       expect(record).not.toBeNull()
+    })
+  })
+
+  describe('get', () => {
+    const task: Task = { id: crypto.randomUUID(), name: 'Pass all tests', notes: 'All tests must pass.' }
+    const ctx = createMockContext({ state: { task } })
+
+    it('returns the task', () => {
+      TaskController.get(ctx)
+      const data = (ctx.response.body as Response)?.data as TaskResource
+      expect(ctx.response.status).toBe(200)
+      expect(data).toBeDefined()
+      expect(data.type).toBe('tasks')
+      expect(data.attributes).toHaveProperty('name', task.name)
+    })
+
+    it('returns a sparse fieldset', () => {
+      const fieldsets = [
+        ['name', task.name, undefined],
+        ['notes', undefined, task.notes],
+        ['name,notes', task.name, task.notes]
+      ]
+
+      for (const [q, name, username] of fieldsets) {
+        const url = new URL(`http://localhost:8001/v1/tasks/${task.id}?fields[tasks]=${q}`)
+        TaskController.get(ctx, url)
+        const data = (ctx.response.body as Response)?.data as TaskResource
+        expect(ctx.response.status).toBe(200)
+        expect(data.attributes.name).toBe(name)
+        expect(data.attributes.notes).toBe(username)
+      }
     })
   })
 })
