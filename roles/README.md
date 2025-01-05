@@ -1,5 +1,11 @@
 # Permissions
 
+## Tasks
+
+### `task:create`
+
+With this, a user has permission to create new tasks.
+
 ## Users
 
 ### `user:read`
