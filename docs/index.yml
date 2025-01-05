@@ -16,6 +16,8 @@ info:
 servers:
   - url: https://api.example.com/v1/
 tags:
+  - name: Tasks
+    description: Operations related to creating, reading, updating, or deleting tasks.
   - name: Users
     description: Operations related to users and user records.
   - name: Authentication
@@ -31,6 +33,8 @@ paths:
     $ref: "../collections/auth/tokens/docs/path-collection.yml"
   /auth/providers:
     $ref: "../collections/auth/providers/docs/path-collection.yml"
+  /tasks:
+    $ref: "../collections/tasks/docs/path-collection.yml"
   /users/{userId}:
     $ref: "../collections/users/docs/path-resource.yml"
   /users/{userId}/roles/{role}:

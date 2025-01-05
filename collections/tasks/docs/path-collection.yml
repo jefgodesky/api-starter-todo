@@ -1,0 +1,27 @@
+post:
+  tags:
+    - Tasks
+  summary: Add a new task
+  description: This endpoint allows authenticated users to create new tasks.
+  operationId: createTask
+  security:
+    - bearerAuth: []
+  requestBody:
+    description: Create a new task
+    content:
+      application/json:
+        schema:
+          $ref: "./schemas.yml#/TaskCreation"
+  responses:
+    200:
+      description: New task created.
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas.yml#/TaskResponse"
+    400:
+      description: |
+        If you're receiving this error response, the most likely cause
+        is sending something other than a `TaskCreation` body.
+    401:
+      description: Only authenticated users can create tasks.

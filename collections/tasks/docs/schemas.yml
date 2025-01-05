@@ -1,0 +1,63 @@
+TaskAttributes:
+  description: The fields associated with a task.
+  type: object
+  properties:
+    name:
+      type: string
+      example: Take out the trash
+    notes:
+      type: string
+      example: Remember to take the trash out on Sunday night.
+    created:
+      type: string
+      format: date-time
+      description: When this task was created.
+    updated:
+      type: string
+      format: date-time
+      description: When this task was most recently updated.
+    completed:
+      type: string
+      format: date-time
+      description: When this task was completed. If not present or set to undefined, that means that the task is not yet complete.
+TaskResource:
+  description: The full JSON:API resource describing a task.
+  type: object
+  required: [type, id, attributes]
+  properties:
+    type:
+      type: string
+      example: "tasks"
+    id:
+      $ref: "../../../docs/schemas.yml#/UUID"
+    attributes:
+      $ref: "#/TaskAttributes"
+TaskCreation:
+  description: The resource that should be provided to create a new task.
+  type: object
+  required: [type, attributes]
+  properties:
+    type:
+      type: string
+      example: "tasks"
+    attributes:
+      description: The fields describing a task.
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: Take out the trash
+        notes:
+          type: string
+          example: Remember to take the trash out on Sunday night.
+TaskResponse:
+  description: A JSON:API response that returns a single task.
+  type: object
+  properties:
+    jsonapi:
+      $ref: "../../../docs/schemas.yml#/JSONAPIHeader"
+    links:
+      $ref: "../../../docs/schemas.yml#/Links"
+    data:
+      $ref: "#/TaskResource"
