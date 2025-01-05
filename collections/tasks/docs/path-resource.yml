@@ -1,0 +1,30 @@
+get:
+  tags:
+    - Tasks
+  summary: Retrieve a single task
+  description: This endpoint allows authenticated users to retrieve one of the tasks that they own.
+  operationId: getTask
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: fields[tasks]
+      in: query
+      description: |
+        This optional parameter is a comma-separated list of the attributes
+        that you would like to receive back for the task requested. Possible
+        values include any combination of `name`, `notes`, `created`,
+        `updated`, and `completed`.
+      schema:
+        type: string
+        example: name,notes,completed
+  responses:
+    200:
+      description: The task requested.
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas.yml#/TaskResponse"
+    401:
+      description: Only authenticated users can retrieve tasks.
+    403:
+      description: Tasks are private; you can't read other users' tasks.
