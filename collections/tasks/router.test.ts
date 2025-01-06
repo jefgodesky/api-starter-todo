@@ -2,6 +2,7 @@ import { describe, afterEach, afterAll, it } from '@std/testing/bdd'
 import { expect } from '@std/expect'
 import supertest from 'supertest'
 import DB from '../../DB.ts'
+import TaskController from './controller.ts'
 import setupTask from '../../utils/testing/setup-task.ts'
 import setupUser from '../../utils/testing/setup-user.ts'
 import getSupertestRoot from '../../utils/testing/get-supertest-root.ts'
@@ -62,6 +63,105 @@ describe('/tasks', () => {
         expect(res.body.data.type).toBe('tasks')
         expect(res.body.data.id).toBeDefined()
         expect(res.body.data.attributes.name).toBe(body.data.attributes.name)
+      })
+    })
+
+    describe('GET', () => {
+      it('returns 401 if user is not authenticated', async () => {
+        const res = await supertest(getSupertestRoot())
+          .get(`/tasks`)
+          .set({ 'Content-Type': 'application/vnd.api+json' })
+
+        expect(res.status).toBe(401)
+      })
+
+      it('returns your tasks', async () => {
+        const { jwt } = await setupTask()
+        const res = await supertest(getSupertestRoot())
+          .get(`/tasks`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.status).toBe(200)
+        expect(res.body.data[0].type).toBe('tasks')
+        expect(res.body.data).toHaveLength(1)
+      })
+
+      it('supports sparse fieldsets', async () => {
+        const { task, jwt } = await setupTask()
+        const fieldsets = [
+          ['name', task.name, undefined],
+          ['notes', undefined, task.notes],
+          ['name,notes', task.name, task.notes]
+        ]
+
+        for (const [q, name, notes] of fieldsets) {
+          const url = `/tasks?fields[tasks]=${q}`
+          const res = await supertest(getSupertestRoot())
+            .get(url)
+            .set({
+              Authorization: `Bearer ${jwt}`,
+              'Content-Type': 'application/vnd.api+json'
+            })
+
+          expect(res.body.data[0].attributes.name).toBe(name)
+          expect(res.body.data[0].attributes.notes).toBe(notes)
+        }
+      })
+
+      it('can be sorted', async () => {
+        const { user, jwt } = await setupUser({ createAccount: false })
+        const taskNames = [
+          'Check it the test passes',
+          'Begin running tests',
+          'Arrange test conditions'
+        ]
+
+        for (const name of taskNames) {
+          await TaskController.getRepository().save({ uid: user.id, name })
+        }
+
+        const res = await supertest(getSupertestRoot())
+          .get(`/tasks?sort=name`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.body.data[0].attributes.name).toBe(taskNames[2])
+        expect(res.body.data[1].attributes.name).toBe(taskNames[1])
+        expect(res.body.data[2].attributes.name).toBe(taskNames[0])
+      })
+
+      it('can be filtered', async () => {
+        const { jwt } = await setupTask()
+        const res = await supertest(getSupertestRoot())
+          .get(`/tasks?filter[completed]=true`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.body.data).toHaveLength(0)
+      })
+
+      it('paginates results', async () => {
+        const { user, jwt } = await setupUser({ createAccount: false })
+        for (let i = 0; i < 5; i++) {
+          await TaskController.getRepository().save({ uid: user.id, name: `Task #${i}` })
+        }
+
+        const res = await supertest(getSupertestRoot())
+          .get(`/tasks?limit=1&offset=1`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.body.data).toHaveLength(1)
+        expect(res.body.data[0].attributes.name).toBe('Task #1')
       })
     })
   })

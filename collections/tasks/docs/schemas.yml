@@ -61,3 +61,34 @@ TaskResponse:
       $ref: "../../../docs/schemas.yml#/Links"
     data:
       $ref: "#/TaskResource"
+TasksResponse:
+  description: A JSON:API response that returns several tasks.
+  type: object
+  properties:
+    jsonapi:
+      $ref: "../../../docs/schemas.yml#/JSONAPIHeader"
+    links:
+      $ref: "../../../docs/schemas.yml#/PaginatedLinks"
+    data:
+      type: array
+      items:
+        $ref: "#/TaskResource"
+TaskID:
+  name: taskId
+  in: path
+  description: A V4 UUID that uniquely identifies the task.
+  required: true
+  schema:
+    $ref: "../../../docs/schemas.yml#/UUID"
+  example: cf9ef1d1-c514-413f-9acd-805300c43804
+TaskFields:
+  name: fields[tasks]
+  in: query
+  description: |
+    This optional parameter is a comma-separated list of the attributes
+    that you would like to receive back for the task requested. Possible
+    values include any combination of `name`, `notes`, `created`,
+    `updated`, and `completed`.
+  schema:
+    type: string
+    example: name,notes,completed

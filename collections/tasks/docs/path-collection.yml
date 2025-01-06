@@ -25,3 +25,68 @@ post:
         is sending something other than a `TaskCreation` body.
     401:
       description: Only authenticated users can create tasks.
+get:
+  tags:
+    - Tasks
+  summary: List tasks
+  description: This endpoint retrieves your tasks.
+  operationId: listTasks
+  security:
+    - bearerAuth: []
+  parameters:
+    - $ref: "./schemas.yml#/TaskFields"
+    - name: sort
+      in: query
+      description: |
+        This optional parameter is a comma-separated list of the attributes
+        that you would like to sort tasks by. Possible values include any
+        combination of `name`, `created`, `updated`, and `completed`. Tasks
+        will be sorted by order of placement (e.g., `name,created` will sort
+        first by name, and then by the time they were created amongst any tasks
+        that have the same name). By default, fields are sorted in ascending
+        order (from lowest value to highest value), unless you precede it with
+        `-`, in which case it will be sorted in descending order (from highest
+        value to lowest value). To sort `name` in alphabetical order, then,
+        you'd specify `sort=name`, while to see the tasks that you most
+        recently updated, you'd specify `sort=-updated`.
+      schema:
+        type: string
+        example: -updated
+    - name: filter[completed]
+      in: query
+      description: |
+        If set to `true`, the list will only contain tasks that have been
+        completed (in which case the `completed` filed will indicate when
+        each was completed). If set to `false`, the list will only contain
+        tasks that have not yet been completed.
+      schema:
+        type: string
+        example: false
+    - name: limit
+      in: query
+      description: |
+        The number of tasks to include in the list. The maximum accepted
+        value is 100; if you specify a number larger than 100, you will
+        only get back 100 tasks.
+      schema:
+        type: number
+        example: 50
+    - name: offset
+      in: query
+      description: |
+        The offset from which this page of results should begin (used in
+        pagination). Without any parameters, the endpoint will return the
+        first 10 tasks, so setting `offset=10` will return the next 10 tasks
+        after those.
+      schema:
+        type: number
+        example: 150
+  responses:
+    200:
+      description: Tasks listed.
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas.yml#/TasksResponse"
+    401:
+      description: Only authenticated users can view tasks.

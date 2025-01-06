@@ -20,8 +20,14 @@ Links:
 PaginatedLinks:
   description: Paginated links for endpoints that respond with many records.
   type: object
-  required: [first, prev, next, last]
+  required: [self, first, prev, next, last]
   properties:
+    self:
+      type: string
+      example: "https://api.example.com/v1/items"
+    describedBy:
+      type: string
+      example: "https://api.example.com/v1/docs"
     first:
       type: string
       example: "https://api.example.com/v1/items?offset=0&limit=10"

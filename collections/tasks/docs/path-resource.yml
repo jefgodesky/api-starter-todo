@@ -7,16 +7,8 @@ get:
   security:
     - bearerAuth: []
   parameters:
-    - name: fields[tasks]
-      in: query
-      description: |
-        This optional parameter is a comma-separated list of the attributes
-        that you would like to receive back for the task requested. Possible
-        values include any combination of `name`, `notes`, `created`,
-        `updated`, and `completed`.
-      schema:
-        type: string
-        example: name,notes,completed
+    - $ref: "./schemas.yml#/TaskID"
+    - $ref: "./schemas.yml#/TaskFields"
   responses:
     200:
       description: The task requested.

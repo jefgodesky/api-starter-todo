@@ -21,6 +21,13 @@ router.post('/',
     await TaskController.create(ctx)
   })
 
+router.get('/',
+  loadClient,
+  requireClient,
+  async ctx => {
+    await TaskController.list(ctx)
+  })
+
 router.get('/:taskId',
   loadClient,
   requireClient,
