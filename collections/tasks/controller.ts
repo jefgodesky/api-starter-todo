@@ -3,7 +3,11 @@ import type Task from '../../types/task.ts'
 import type TaskCreation from '../../types/task-creation.ts'
 import TaskRepository from './repository.ts'
 import taskToTaskResponse from '../../utils/transformers/task-to-task-response.ts'
+import tasksToTaskPageResponse from '../../utils/transformers/tasks-to-task-page-response.ts'
 import urlToTaskFields from '../../utils/transformers/url-to-task-fields.ts'
+import urlToTaskFiltering from '../../utils/transformers/url-to-task-filtering.ts'
+import urlToTaskSorting from '../../utils/transformers/url-to-task-sorting.ts'
+import getNumberFromQueryString from '../../utils/get-number-from-query-string.ts'
 import sendJSON from '../../utils/send-json.ts'
 
 class TaskController {
@@ -31,6 +35,23 @@ class TaskController {
     const fieldSrc = url ?? ctx
     const fields = urlToTaskFields(fieldSrc)
     const res = taskToTaskResponse(ctx.state.task, fields)
+    sendJSON(ctx, res)
+  }
+
+  static async list (ctx: Context, url?: URL) {
+    const src = url ?? ctx.request.url
+    const fields = urlToTaskFields(src)
+    const limit = getNumberFromQueryString(src, 'limit')
+    const offset = getNumberFromQueryString(src, 'offset')
+    const sort = urlToTaskSorting(src)
+    const filter = urlToTaskFiltering(src)
+
+    const options: { limit?: number, offset?: number, filter?: string, sort?: string } = { sort, filter }
+    if (limit) options.limit = limit
+    if (offset) options.offset = offset
+
+    const data = await TaskController.getRepository().listByUID(ctx.state.client.id, options)
+    const res = tasksToTaskPageResponse(data.rows, data.total, offset ?? 0, limit, fields)
     sendJSON(ctx, res)
   }
 }

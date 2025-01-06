@@ -7,7 +7,9 @@ import type Task from '../../types/task.ts'
 import type TaskCreation from '../../types/task-creation.ts'
 import type TaskResource from '../../types/task-resource.ts'
 import DB from '../../DB.ts'
+import TaskRepository from './repository.ts'
 import stringToReadableStream from '../../utils/transformers/string-to-readable-stream.ts'
+import setupTask from '../../utils/testing/setup-task.ts'
 import setupUser from '../../utils/testing/setup-user.ts'
 import TaskController from './controller.ts'
 
@@ -67,6 +69,78 @@ describe('TaskController', () => {
         expect(data.attributes.name).toBe(name)
         expect(data.attributes.notes).toBe(username)
       }
+    })
+  })
+
+  describe('list', () => {
+    it('shows your tasks', async () => {
+      const { user, task } = await setupTask()
+      await setupTask()
+
+      const ctx = createMockContext({ state: { client: user } })
+      await TaskController.list(ctx)
+      const data = (ctx.response.body as Response)?.data as TaskResource[]
+
+      expect(ctx.response.status).toBe(Status.OK)
+      expect(data).toHaveLength(1)
+      expect(data[0].type).toBe('tasks')
+      expect(data[0].id).toBe(task.id)
+      expect(data[0].attributes.name).toBe(task.name)
+    })
+
+    it('can be sorted', async () => {
+      const repository = new TaskRepository()
+      const { user } = await setupUser({ createAccount: false, createToken: false })
+      const taskNames = [
+        'Check it the test passes',
+        'Begin running tests',
+        'Arrange test conditions'
+      ]
+
+      for (const name of taskNames) {
+        await repository.save({ uid: user.id, name })
+      }
+
+      const ctx = createMockContext({ state: { client: user } })
+      const url = new URL('http://localhost:8001/v1/tasks?sort=name')
+      await TaskController.list(ctx, url)
+      const data = (ctx.response.body as Response)?.data as TaskResource[]
+
+      expect(ctx.response.status).toBe(Status.OK)
+      expect(data).toHaveLength(3)
+      expect(data[0].attributes.name).toBe(taskNames[2])
+      expect(data[1].attributes.name).toBe(taskNames[1])
+      expect(data[2].attributes.name).toBe(taskNames[0])
+    })
+
+    it('can be filtered', async () => {
+      const { user } = await setupTask()
+
+      const ctx = createMockContext({ state: { client: user } })
+      const url = new URL('http://localhost:8001/v1/tasks?filter[completed]=true')
+      await TaskController.list(ctx, url)
+      const data = (ctx.response.body as Response)?.data as TaskResource[]
+
+      expect(ctx.response.status).toBe(Status.OK)
+      expect(data).toHaveLength(0)
+    })
+
+    it('paginates results', async () => {
+      const repository = new TaskRepository()
+      const total = 5
+      const limit = 3
+      const { user } = await setupUser({ createAccount: false, createToken: false })
+      for (let i = 0; i < total; i++) {
+        await repository.save({ uid: user.id, name: `Task #${i}` })
+      }
+
+      const ctx = createMockContext({ state: { client: user } })
+      const url = new URL(`http://localhost:8001/v1/tasks?limit=${limit}&offset=1`)
+      await TaskController.list(ctx, url)
+      const data = (ctx.response.body as Response)?.data as TaskResource[]
+
+      expect(data).toHaveLength(limit)
+      expect(data[0].attributes.name).toBe('Task #1')
     })
   })
 })
