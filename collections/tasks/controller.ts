@@ -10,6 +10,7 @@ import urlToTaskFiltering from '../../utils/transformers/url-to-task-filtering.t
 import urlToTaskSorting from '../../utils/transformers/url-to-task-sorting.ts'
 import getNumberFromQueryString from '../../utils/get-number-from-query-string.ts'
 import sendJSON from '../../utils/send-json.ts'
+import sendNoContent from '../../utils/send-no-content.ts'
 
 class TaskController {
   private static repository: TaskRepository
@@ -74,6 +75,12 @@ class TaskController {
     } else {
       throw createHttpError(Status.InternalServerError)
     }
+  }
+
+  static async destroy (ctx: Context) {
+    const { task } = ctx.state
+    await TaskController.getRepository().delete(task.id)
+    sendNoContent(ctx)
   }
 }
 

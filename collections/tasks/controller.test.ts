@@ -211,4 +211,22 @@ describe('TaskController', () => {
       expect(check?.completed).toBeNull()
     })
   })
+
+  describe('destroy', () => {
+    let task: Task
+
+    beforeEach(async () => {
+      const data = await setupTask()
+      task = data.task
+    })
+
+    it('deletes a task', async () => {
+      const ctx = createMockContext({ state: { task } })
+      await TaskController.destroy(ctx)
+      const check = await TaskController.getRepository().get(task.id!)
+
+      expect(ctx.response.status).toBe(Status.NoContent)
+      expect(check).toBeNull()
+    })
+  })
 })
