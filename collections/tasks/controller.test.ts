@@ -1,10 +1,12 @@
-import { describe, afterEach, afterAll, it } from '@std/testing/bdd'
+import { describe, beforeEach, afterEach, afterAll, it } from '@std/testing/bdd'
 import { expect } from '@std/expect'
 import { Status } from '@oak/oak'
 import { createMockContext } from '@oak/oak/testing'
 import type Response from '../../types/response.ts'
 import type Task from '../../types/task.ts'
+import type TaskAttributes from '../../types/task-attributes.ts'
 import type TaskCreation from '../../types/task-creation.ts'
+import type TaskPatch from '../../types/task-patch.ts'
 import type TaskResource from '../../types/task-resource.ts'
 import DB from '../../DB.ts'
 import TaskRepository from './repository.ts'
@@ -141,6 +143,72 @@ describe('TaskController', () => {
 
       expect(data).toHaveLength(limit)
       expect(data[0].attributes.name).toBe('Task #1')
+    })
+  })
+
+  describe('update', () => {
+    let task: Task
+
+    beforeEach(async () => {
+      const data = await setupTask()
+      task = data.task
+    })
+
+    const updateTask = async (patch: TaskPatch): Promise<{ status: number, attributes: TaskAttributes, check: Task | null }> => {
+      const ctx = createMockContext({
+        state: { task },
+        body: stringToReadableStream(JSON.stringify(patch))
+      })
+
+      await TaskController.update(ctx)
+      const { attributes } = (ctx.response.body as Response).data as TaskResource
+      const check = await TaskController.getRepository().get(task.id!)
+      return { status: ctx.response.status, attributes, check }
+    }
+
+    it('patches a task', async () => {
+      const patch: TaskPatch = {
+        data: {
+          type: 'tasks',
+          id: task.id!,
+          attributes: {
+            name: 'Updated name',
+            completed: true
+          }
+        }
+      }
+
+      const { status, attributes, check } = await updateTask(patch)
+
+      expect(status).toBe(Status.OK)
+      expect(attributes.name).toBe(patch.data.attributes.name)
+      expect(attributes.notes).toBe(task.notes)
+      expect(attributes.completed).toBeDefined()
+      expect(check).not.toBeNull()
+      expect(check?.name).toBe(patch.data.attributes.name)
+      expect(check?.notes).toBe(task.notes)
+      expect(check?.completed).toEqual(attributes.completed)
+    })
+
+    it('can mark a completed task incomplete', async () => {
+      const patch: TaskPatch = {
+        data: {
+          type: 'tasks',
+          id: task.id!,
+          attributes: {
+            completed: false
+          }
+        }
+      }
+
+      task.completed = new Date()
+      await TaskController.getRepository().save(task)
+      const { status, attributes, check } = await updateTask(patch)
+
+      expect(status).toBe(Status.OK)
+      expect(attributes.completed).not.toBeDefined()
+      expect(check).not.toBeNull()
+      expect(check?.completed).toBeNull()
     })
   })
 })

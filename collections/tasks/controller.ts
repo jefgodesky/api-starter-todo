@@ -1,6 +1,7 @@
 import { Context, Status, createHttpError } from '@oak/oak'
 import type Task from '../../types/task.ts'
 import type TaskCreation from '../../types/task-creation.ts'
+import type TaskPatch from '../../types/task-patch.ts'
 import TaskRepository from './repository.ts'
 import taskToTaskResponse from '../../utils/transformers/task-to-task-response.ts'
 import tasksToTaskPageResponse from '../../utils/transformers/tasks-to-task-page-response.ts'
@@ -53,6 +54,26 @@ class TaskController {
     const data = await TaskController.getRepository().listByUID(ctx.state.client.id, options)
     const res = tasksToTaskPageResponse(data.rows, data.total, offset ?? 0, limit, fields)
     sendJSON(ctx, res)
+  }
+
+  static async update (ctx: Context) {
+    const body = await ctx.request.body.json() as TaskPatch
+    const { name, notes, completed } = body.data.attributes
+    const { task } = ctx.state
+
+    if (name) task.name = name
+    if (notes) task.notes = notes
+    if (completed === true) task.completed = new Date()
+    if (completed === false) task.completed = undefined
+    if (name || notes || completed) task.updated = new Date()
+
+    const saved = await TaskController.getRepository().save(task)
+    if (saved) {
+      const res = taskToTaskResponse(saved)
+      sendJSON(ctx, res)
+    } else {
+      throw createHttpError(Status.InternalServerError)
+    }
   }
 }
 
