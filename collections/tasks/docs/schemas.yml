@@ -51,6 +51,32 @@ TaskCreation:
         notes:
           type: string
           example: Remember to take the trash out on Sunday night.
+TaskPatch:
+  description: The resource that should be provided to update a task.
+  type: object
+  required: [type, id, attributes]
+  properties:
+    type:
+      type: string
+      example: "tasks"
+    id:
+      $ref: "./schemas.yml#/TaskID"
+    attributes:
+      description: The task fields to update.
+      type: object
+      properties:
+        name:
+          type: string
+          example: Take out the trash
+        notes:
+          type: string
+          example: Remember to take the trash out on Sunday night.
+        completed:
+          type: boolean
+          description: |
+            If set to `true`, the task's `completed` field will be set
+            to the time when the update is processed. If set to `false`,
+            the `completed` field will be unset.
 TaskResponse:
   description: A JSON:API response that returns a single task.
   type: object

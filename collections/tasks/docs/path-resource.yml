@@ -20,3 +20,33 @@ get:
       description: Only authenticated users can retrieve tasks.
     403:
       description: Tasks are private; you can't read other users' tasks.
+patch:
+  tags:
+    - Tasks
+  summary: Update a task
+  description: |
+    This endpoint allows users to update tasks that they own. Note that this
+    is a patch operation, meaning that only those fields supplied are updated.
+    Any field not provided will retain its previous value.
+  operationId: updateTask
+  security:
+    - bearerAuth: []
+  parameters:
+    - $ref: "./schemas.yml#/TaskID"
+  requestBody:
+    description: The update to apply
+    content:
+      application/json:
+        schema:
+          $ref: "./schemas.yml#/TaskPatch"
+  responses:
+    200:
+      description: The updated task.
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas.yml#/TaskResponse"
+    401:
+      description: Only authenticated users can update tasks.
+    403:
+      description: Tasks are private; you can't update other users' tasks.

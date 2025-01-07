@@ -5,6 +5,7 @@ import loadClient from '../../middlewares/load/client.ts'
 import loadResource from '../../middlewares/load/resource.ts'
 import requireClient from '../../middlewares/require/client.ts'
 import requireTaskCreationBody from '../../middlewares/require/body/task-creation.ts'
+import requireTaskPatchBody from '../../middlewares/require/body/task-patch.ts'
 import requirePermissions from '../../middlewares/require/permissions.ts'
 import requireTask from '../../middlewares/require/resources/task.ts'
 
@@ -36,6 +37,17 @@ router.get('/:taskId',
   requirePermissions('task:read'),
   ctx => {
     TaskController.get(ctx)
+  })
+
+router.patch('/:taskId',
+  loadClient,
+  requireClient,
+  loadResource,
+  requireTask,
+  requireTaskPatchBody,
+  requirePermissions('task:update'),
+  async ctx => {
+    await TaskController.update(ctx)
   })
 
 export default router
