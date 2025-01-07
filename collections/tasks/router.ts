@@ -50,4 +50,14 @@ router.patch('/:taskId',
     await TaskController.update(ctx)
   })
 
+router.delete('/:taskId',
+  loadClient,
+  requireClient,
+  loadResource,
+  requireTask,
+  requirePermissions('task:destroy'),
+  async ctx => {
+    await TaskController.destroy(ctx)
+  })
+
 export default router

@@ -326,5 +326,58 @@ describe('/tasks', () => {
         expect(res.body.data.attributes.completed).toBeDefined()
       })
     })
+
+    describe('DELETE', () => {
+      let task: Task
+      let jwt: string
+
+      beforeEach(async () => {
+        const data = await setupTask()
+        task = data.task
+        jwt = data.jwt
+      })
+
+      it('returns 401 if not authenticated', async () => {
+        const res = await supertest(getSupertestRoot())
+          .delete(`/tasks/${task.id}`)
+          .set({'Content-Type': 'application/vnd.api+json'})
+
+        expect(res.status).toBe(401)
+      })
+
+      it('returns 403 if you try to delete someone else\'s task', async () => {
+        const data = await setupUser({ createAccount: false })
+        const res = await supertest(getSupertestRoot())
+          .delete(`/tasks/${task.id}`)
+          .set({
+            Authorization: `Bearer ${data.jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.status).toBe(403)
+      })
+
+      it('returns 404 if no such task can be found', async () => {
+        const res = await supertest(getSupertestRoot())
+          .delete(`/tasks/${crypto.randomUUID()}`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.status).toBe(404)
+      })
+
+      it('deletes the task', async () => {
+        const res = await supertest(getSupertestRoot())
+          .delete(`/tasks/${task.id}`)
+          .set({
+            Authorization: `Bearer ${jwt}`,
+            'Content-Type': 'application/vnd.api+json'
+          })
+
+        expect(res.status).toBe(204)
+      })
+    })
   })
 })

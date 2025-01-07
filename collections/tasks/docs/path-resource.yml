@@ -50,3 +50,20 @@ patch:
       description: Only authenticated users can update tasks.
     403:
       description: Tasks are private; you can't update other users' tasks.
+delete:
+  tags:
+    - Tasks
+  summary: Delete a task
+  description: This endpoint allows users to delete their tasks.
+  operationId: deleteTask
+  security:
+    - bearerAuth: []
+  parameters:
+    - $ref: "./schemas.yml#/TaskID"
+  responses:
+    204:
+      description: The task has been deleted.
+    401:
+      description: Only authenticated users can delete tasks.
+    403:
+      description: Tasks are private; you can't delete other users' tasks.
