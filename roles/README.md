@@ -14,6 +14,10 @@ With this, a user has permission to read any task.
 
 With this, a user has permission to update any task.
 
+### `task:destroy`
+
+With this, a user has permission to delete any task.
+
 ### `task:own:read`
 
 With this, a user has permission to view her own tasks.
@@ -29,6 +33,14 @@ Note that a user who has `task:update` can also edit her
 own tasks, even if she does not have `token:own:update`.
 This is only meaningful for users who do not have
 `task:update`.
+
+### `task:own:destroy`
+
+With this, a user has permission to delete her own tasks.
+Note that a user who has `task:destroy` can also delete her
+own tasks, even if she does not have `token:own:destroy`.
+This is only meaningful for users who do not have
+`task:destroy`.
 
 ## Users
 

@@ -8,6 +8,7 @@ roles:
     - task:create
     - task:own:read
     - task:own:update
+    - task:own:destroy
     - user:self:update
     - user:self:destroy
     - role:self:listed:grant
